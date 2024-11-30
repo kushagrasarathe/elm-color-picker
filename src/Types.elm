@@ -1,35 +1,52 @@
 module Types exposing (..)
 
-import Lamdera exposing (ClientId, SessionId)
-import Set exposing (Set)
+
+type Color
+    = Red
+    | Blue
+    | Green
+    | Yellow
+    | Purple
+    | Orange
 
 
-type alias BackendModel =
-    { counter : Int
+
+-- circle on the canvas
+
+
+type alias Circle =
+    { x : Float
+    , y : Float
+    , color : Color
     }
+
+
+
+-- Frontend model
 
 
 type alias FrontendModel =
-    { counter : Int
-    , clientId : String
+    { selectedColor : Maybe Color
+    , circles : List Circle
     }
 
 
+
+-- Backend Model
+
+
+type alias BackendModel =
+    { circles : List Circle }
+
+
 type FrontendMsg
-    = Increment
-    | Decrement
-    | FNoop
+    = ColorClicked Color
 
 
 type ToBackend
-    = CounterIncremented
-    | CounterDecremented
-
-
-type BackendMsg
-    = ClientConnected SessionId ClientId
-    | Noop
+    = AddCircle Color
 
 
 type ToFrontend
-    = CounterNewValue Int String
+    = CircleAdded Circle
+    | InitialState (List Circle)
