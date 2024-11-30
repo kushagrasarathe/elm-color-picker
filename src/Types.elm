@@ -1,34 +1,35 @@
 module Types exposing (..)
 
-import Browser exposing (UrlRequest)
-import Browser.Navigation exposing (Key)
-import Url exposing (Url)
-
-
-type alias FrontendModel =
-    { key : Key
-    , message : String
-    }
+import Lamdera exposing (ClientId, SessionId)
+import Set exposing (Set)
 
 
 type alias BackendModel =
-    { message : String
+    { counter : Int
+    }
+
+
+type alias FrontendModel =
+    { counter : Int
+    , clientId : String
     }
 
 
 type FrontendMsg
-    = UrlClicked UrlRequest
-    | UrlChanged Url
-    | NoOpFrontendMsg
+    = Increment
+    | Decrement
+    | FNoop
 
 
 type ToBackend
-    = NoOpToBackend
+    = CounterIncremented
+    | CounterDecremented
 
 
 type BackendMsg
-    = NoOpBackendMsg
+    = ClientConnected SessionId ClientId
+    | Noop
 
 
 type ToFrontend
-    = NoOpToFrontend
+    = CounterNewValue Int String
