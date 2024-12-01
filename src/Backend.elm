@@ -19,7 +19,7 @@ app =
 
 init : ( Model, Cmd BackendMsg )
 init =
-    ( { sections = [] }
+    ( { circles = [] }
     , Cmd.none
     )
 
@@ -27,16 +27,16 @@ init =
 update : BackendMsg -> Model -> ( Model, Cmd BackendMsg )
 update msg model =
     case msg of
-        ClientConnected sessionId clientId ->
+        ClientConnected _ clientId ->
             -- send current state to new clients
             ( model
-            , sendToFrontend clientId (InitialState model.sections)
+            , sendToFrontend clientId (InitialState model.circles)
             )
 
-        NewSection section ->
-            -- add new section and broadcast
-            ( { model | sections = section :: model.sections }
-            , broadcast (SectionAdded section)
+        NewCircle circle ->
+            -- add new circle and broadcast it to all clients
+            ( { model | circles = circle :: model.circles }
+            , broadcast (CircleAdded circle)
             )
 
 
@@ -45,20 +45,20 @@ update msg model =
 
 
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
-updateFromFrontend sessionId clientId msg model =
+updateFromFrontend _ _ msg model =
     case msg of
         AddColor color ->
             let
-                newSections =
-                    createNewSections color model.sections
+                newCircles =
+                    createNewCircles color model.circles
             in
             -- update the model and broadcast it to all clients
-            ( { model | sections = newSections }
-            , broadcast (InitialState newSections)
+            ( { model | circles = newCircles }
+            , broadcast (InitialState newCircles)
             )
 
         ClearCanvas ->
-            ( { model | sections = [] }
+            ( { model | circles = [] }
             , broadcast CanvasCleared
             )
 
@@ -72,39 +72,19 @@ subscriptions model =
 
 
 -- helper functions
--- calculate new layout when a color is added
--- divide canvas width by number of colors, and
--- position each section consecutively, assigning equal width to each section
+-- creates new circles based on the color and existing circles
 
 
-calculateSections : List Color -> List ColorSection
-calculateSections colors =
-    let
-        totalColors =
-            List.length colors
-
-        sectionWidth =
-            100.0 / toFloat totalColors
-    in
-    List.indexedMap
-        (\index color ->
-            { color = color
-            , x = toFloat index * sectionWidth
-            , width = sectionWidth
-            }
-        )
-        colors
-
-
-
--- create new layout when color is added
--- get all colors and calculate positions/sections for all colors
-
-
-createNewSections : Color -> List ColorSection -> List ColorSection
-createNewSections newColor existingSections =
+createNewCircles : Color -> List ColorCircle -> List ColorCircle
+createNewCircles newColor existingCircles =
     let
         allColors =
-            List.map .color existingSections ++ [ newColor ]
+            List.map .color existingCircles ++ [ newColor ]
     in
-    calculateSections allColors
+    List.map
+        (\color ->
+            { color = color
+            , size = 24
+            }
+        )
+        allColors

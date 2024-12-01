@@ -33,7 +33,7 @@ app =
 init : () -> ( FrontendModel, Cmd FrontendMsg )
 init _ =
     ( { selectedColor = Nothing
-      , sections = []
+      , circles = []
       }
     , Cmd.none
     )
@@ -66,14 +66,14 @@ update msg model =
 updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 updateFromBackend msg model =
     case msg of
-        SectionAdded section ->
-            ( { model | sections = section :: model.sections }, Cmd.none )
+        CircleAdded circle ->
+            ( { model | circles = circle :: model.circles }, Cmd.none )
 
-        InitialState sections ->
-            ( { model | sections = sections }, Cmd.none )
+        InitialState circles ->
+            ( { model | circles = circles }, Cmd.none )
 
         CanvasCleared ->
-            ( { model | sections = [] }, Cmd.none )
+            ( { model | circles = [] }, Cmd.none )
 
 
 view : FrontendModel -> Browser.Document FrontendMsg
@@ -89,17 +89,28 @@ view model =
             , style "align-items" "center"
             ]
             [ Html.div [ style "width" "60%" ]
-                [ -- canvas
+                [ Html.div
+                    []
+                    [ Html.h1 [] [ Html.text "Elm Color Picker" ]
+                    ]
+                , -- canvas
                   Html.div
                     [ style "width" "100%"
-                    , style "height" "500px"
+                    , style "min-height" "500px"
+                    , style "max-height" "500px"
+                    , style "overflow" "auto"
                     , style "border" "1px solid black"
                     , style "margin-bottom" "20px"
                     , style "background-color" "white"
-                    , style "position" "relative"
-                    , style "overflow" "hidden"
+                    , style "display" "flex"
+                    , style "flex-direction" "row"
+                    , style "justify-content" "start"
+                    , style "flex-wrap" "wrap"
+                    , style "gap" "20px"
+                    , style "padding" "20px"
+                    , style "align-content" "flex-start"
                     ]
-                    (List.map viewColorSection model.sections)
+                    (List.map viewColorCircle model.circles)
                 , Html.div
                     [ style "display" "flex"
                     , style "gap" "2px"
@@ -171,17 +182,16 @@ getColorHex color =
 
 
 
--- render color section
+-- render color circles
 
 
-viewColorSection : ColorSection -> Html FrontendMsg
-viewColorSection section =
+viewColorCircle : ColorCircle -> Html FrontendMsg
+viewColorCircle circle =
     Html.div
-        [ style "position" "absolute"
-        , style "left" (String.fromFloat section.x ++ "%")
-        , style "width" (String.fromFloat section.width ++ "%")
-        , style "height" "100%"
-        , style "background-color" (getColorHex section.color)
+        [ style "width" (String.fromFloat circle.size ++ "px")
+        , style "height" (String.fromFloat circle.size ++ "px")
+        , style "border-radius" "50%"
+        , style "background-color" (getColorHex circle.color)
         , style "transition" "all 0.3s ease"
         ]
         []

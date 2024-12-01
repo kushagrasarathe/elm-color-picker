@@ -22,10 +22,9 @@ type Color
 -- color section in canvas
 
 
-type alias ColorSection =
+type alias ColorCircle =
     { color : Color
-    , x : Float
-    , width : Float
+    , size : Float
     }
 
 
@@ -35,7 +34,7 @@ type alias ColorSection =
 
 type alias FrontendModel =
     { selectedColor : Maybe Color
-    , sections : List ColorSection
+    , circles : List ColorCircle
     }
 
 
@@ -44,12 +43,12 @@ type alias FrontendModel =
 
 
 type alias BackendModel =
-    { sections : List ColorSection }
+    { circles : List ColorCircle }
 
 
 type BackendMsg
     = ClientConnected SessionId ClientId
-    | NewSection ColorSection
+    | NewCircle ColorCircle
 
 
 type FrontendMsg
@@ -66,6 +65,6 @@ type ToBackend
 
 
 type ToFrontend
-    = SectionAdded ColorSection
-    | InitialState (List ColorSection)
+    = CircleAdded ColorCircle
+    | InitialState (List ColorCircle)
     | CanvasCleared
