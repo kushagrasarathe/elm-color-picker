@@ -48,6 +48,11 @@ update msg model =
               -- send message to backend when color is clicked
             )
 
+        ResetCanvas ->
+            ( model
+            , sendToBackend ClearCanvas
+            )
+
         UrlClicked urlRequest ->
             ( model, Cmd.none )
 
@@ -66,6 +71,9 @@ updateFromBackend msg model =
 
         InitialState sections ->
             ( { model | sections = sections }, Cmd.none )
+
+        CanvasCleared ->
+            ( { model | sections = [] }, Cmd.none )
 
 
 view : FrontendModel -> Browser.Document FrontendMsg
@@ -88,8 +96,10 @@ view model =
                     , style "border" "1px solid black"
                     , style "margin-bottom" "20px"
                     , style "background-color" "white"
+                    , style "position" "relative"
+                    , style "overflow" "hidden"
                     ]
-                    []
+                    (List.map viewColorSection model.sections)
                 , Html.div
                     [ style "display" "flex"
                     , style "gap" "2px"
@@ -103,6 +113,22 @@ view model =
                     , colorButton Color4
                     , colorButton Color5
                     ]
+                , -- Reset button
+                  Html.button
+                    [ onClick ResetCanvas
+                    , style "width" "100%"
+                    , style "padding" "10px"
+                    , style "background-color" "#ff4444"
+                    , style "color" "white"
+                    , style "border" "none"
+                    , style "border-radius" "4px"
+                    , style "cursor" "pointer"
+                    , style "font-size" "16px"
+                    , style "transition" "background-color 0.3s"
+                    , style "hover" "background-color: #ff6666"
+                    , style "margin-top" "12px"
+                    ]
+                    [ text "Reset Canvas" ]
                 ]
             ]
         ]
@@ -142,3 +168,20 @@ getColorHex color =
 
         Color5 ->
             "#213555"
+
+
+
+-- render color section
+
+
+viewColorSection : ColorSection -> Html FrontendMsg
+viewColorSection section =
+    Html.div
+        [ style "position" "absolute"
+        , style "left" (String.fromFloat section.x ++ "%")
+        , style "width" (String.fromFloat section.width ++ "%")
+        , style "height" "100%"
+        , style "background-color" (getColorHex section.color)
+        , style "transition" "all 0.3s ease"
+        ]
+        []

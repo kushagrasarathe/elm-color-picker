@@ -54,6 +54,7 @@ type BackendMsg
 
 type FrontendMsg
     = ColorClicked Color
+    | ResetCanvas
     | UrlClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | NoOpFrontendMsg
@@ -61,8 +62,10 @@ type FrontendMsg
 
 type ToBackend
     = AddColor Color
+    | ClearCanvas
 
 
 type ToFrontend
     = SectionAdded ColorSection
     | InitialState (List ColorSection)
+    | CanvasCleared

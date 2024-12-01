@@ -57,6 +57,11 @@ updateFromFrontend sessionId clientId msg model =
             , broadcast (InitialState newSections)
             )
 
+        ClearCanvas ->
+            ( { model | sections = [] }
+            , broadcast CanvasCleared
+            )
+
 
 subscriptions : Model -> Sub BackendMsg
 subscriptions model =
