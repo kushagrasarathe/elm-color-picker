@@ -1,9 +1,9 @@
 module Frontend exposing (Model, app)
 
+import Browser
 import Html exposing (Html, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
-import Http
 import Lamdera exposing (sendToBackend)
 import Types exposing (..)
 
@@ -20,50 +20,125 @@ additional update function; updateFromBackend.
 -}
 app =
     Lamdera.frontend
-        { init = \_ _ -> init
+        { init = \url key -> init ()
         , update = update
         , updateFromBackend = updateFromBackend
-        , view =
-            \model ->
-                { title = "v1"
-                , body = [ view model ]
-                }
         , subscriptions = \_ -> Sub.none
-        , onUrlChange = \_ -> FNoop
-        , onUrlRequest = \_ -> FNoop
+        , view = view
+        , onUrlChange = \_ -> NoOpFrontendMsg
+        , onUrlRequest = \_ -> NoOpFrontendMsg
         }
 
 
-init : ( Model, Cmd FrontendMsg )
-init =
-    ( { counter = 0, clientId = "" }, Cmd.none )
+init : () -> ( FrontendModel, Cmd FrontendMsg )
+init _ =
+    ( { selectedColor = Nothing
+      , circles = []
+      }
+    , Cmd.none
+    )
 
 
-update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
+update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 update msg model =
     case msg of
-        Increment ->
-            ( { model | counter = model.counter + 1 }, sendToBackend CounterIncremented )
+        ColorClicked color ->
+            ( { model | selectedColor = Just color }
+            , sendToBackend (AddCircle color)
+              -- send message to backend when color is clicked
+            )
 
-        Decrement ->
-            ( { model | counter = model.counter - 1 }, sendToBackend CounterDecremented )
+        UrlClicked urlRequest ->
+            ( model, Cmd.none )
 
-        FNoop ->
+        UrlChanged url ->
+            ( model, Cmd.none )
+
+        NoOpFrontendMsg ->
             ( model, Cmd.none )
 
 
-updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
+updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 updateFromBackend msg model =
     case msg of
-        CounterNewValue newValue clientId ->
-            ( { model | counter = newValue, clientId = clientId }, Cmd.none )
+        CircleAdded circle ->
+            ( { model | circles = circle :: model.circles }, Cmd.none )
+
+        InitialState circles ->
+            ( { model | circles = circles }, Cmd.none )
 
 
-view : Model -> Html FrontendMsg
+view : FrontendModel -> Browser.Document FrontendMsg
 view model =
-    Html.div [ style "padding" "30px" ]
-        [ Html.button [ onClick Increment ] [ text "+" ]
-        , Html.text (String.fromInt model.counter)
-        , Html.button [ onClick Decrement ] [ text "-" ]
-        , Html.div [] [ Html.text "Click me then refresh me!" ]
+    { title = "Color Picker"
+    , body =
+        [ Html.div
+            [ style "background-color" "#F4F6FF"
+            , style "height" "100vh"
+            , style "display" "flex"
+            , style "flex-direction" "column"
+            , style "justify-content" "center"
+            , style "align-items" "center"
+            ]
+            [ Html.div [ style "width" "60%" ]
+                [ -- canvas
+                  Html.div
+                    [ style "width" "100%"
+                    , style "height" "500px"
+                    , style "border" "1px solid black"
+                    , style "margin-bottom" "20px"
+                    , style "background-color" "white"
+                    ]
+                    []
+                , Html.div
+                    [ style "display" "flex"
+                    , style "gap" "2px"
+                    , style "border" "1px solid black"
+                    , style "width" "100%"
+                    , style "padding" "2px"
+                    ]
+                    [ colorButton Color1
+                    , colorButton Color2
+                    , colorButton Color3
+                    , colorButton Color4
+                    , colorButton Color5
+                    ]
+                ]
+            ]
         ]
+    }
+
+
+colorButton : Color -> Html FrontendMsg
+colorButton color =
+    Html.div
+        [ style "width" "100%"
+        , style "height" "60px"
+        , style "background-color" (getColorHex color)
+        , style "cursor" "pointer"
+        , onClick (ColorClicked color)
+        ]
+        []
+
+
+
+-- helper functions
+
+
+getColorHex : Color -> String
+getColorHex color =
+    case color of
+        Color1 ->
+            "#CDC1FF"
+
+        Color2 ->
+            "#6DA9E4"
+
+        Color3 ->
+            "#FFD95A"
+
+        Color4 ->
+            "#99BC85"
+
+        Color5 ->
+            "#213555"
