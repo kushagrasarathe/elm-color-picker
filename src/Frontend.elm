@@ -33,7 +33,7 @@ app =
 init : () -> ( FrontendModel, Cmd FrontendMsg )
 init _ =
     ( { selectedColor = Nothing
-      , circles = []
+      , sections = []
       }
     , Cmd.none
     )
@@ -44,7 +44,7 @@ update msg model =
     case msg of
         ColorClicked color ->
             ( { model | selectedColor = Just color }
-            , sendToBackend (AddCircle color)
+            , sendToBackend (AddColor color)
               -- send message to backend when color is clicked
             )
 
@@ -61,11 +61,11 @@ update msg model =
 updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 updateFromBackend msg model =
     case msg of
-        CircleAdded circle ->
-            ( { model | circles = circle :: model.circles }, Cmd.none )
+        SectionAdded section ->
+            ( { model | sections = section :: model.sections }, Cmd.none )
 
-        InitialState circles ->
-            ( { model | circles = circles }, Cmd.none )
+        InitialState sections ->
+            ( { model | sections = sections }, Cmd.none )
 
 
 view : FrontendModel -> Browser.Document FrontendMsg

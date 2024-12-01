@@ -1,23 +1,31 @@
 module Types exposing (..)
 
+import Browser
+import Browser.Navigation exposing (Key)
+import Lamdera exposing (ClientId, SessionId, Url)
+import Url
+
+
+
+-- color palette
+
 
 type Color
-    = Red
-    | Blue
-    | Green
-    | Yellow
-    | Purple
-    | Orange
+    = Color1
+    | Color2
+    | Color3
+    | Color4
+    | Color5
 
 
 
--- circle on the canvas
+-- color section in canvas
 
 
-type alias Circle =
-    { x : Float
-    , y : Float
-    , color : Color
+type alias ColorSection =
+    { color : Color
+    , x : Float
+    , width : Float
     }
 
 
@@ -27,7 +35,7 @@ type alias Circle =
 
 type alias FrontendModel =
     { selectedColor : Maybe Color
-    , circles : List Circle
+    , sections : List ColorSection
     }
 
 
@@ -36,17 +44,25 @@ type alias FrontendModel =
 
 
 type alias BackendModel =
-    { circles : List Circle }
+    { sections : List ColorSection }
+
+
+type BackendMsg
+    = ClientConnected SessionId ClientId
+    | NewSection ColorSection
 
 
 type FrontendMsg
     = ColorClicked Color
+    | UrlClicked Browser.UrlRequest
+    | UrlChanged Url.Url
+    | NoOpFrontendMsg
 
 
 type ToBackend
-    = AddCircle Color
+    = AddColor Color
 
 
 type ToFrontend
-    = CircleAdded Circle
-    | InitialState (List Circle)
+    = SectionAdded ColorSection
+    | InitialState (List ColorSection)
